@@ -1,0 +1,31 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: test
+
+  node_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongo
+    restart: always
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/test
+      SESSION_SECRET: ${SESSION_SECRET:-SomeSecretKey}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URI: ${GOOGLE_CALLBACK_URI:-http://localhost:3000/auth/google/callback}
+      NODE_ENV: docker
+      PORT: 3000
+
+volumes:
+  mongo_data:
