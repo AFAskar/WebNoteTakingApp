@@ -84,6 +84,6 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --port 3000 \
-            --set-env-vars NODE_ENV=production,PORT=3000 \
+            --set-env-vars NODE_ENV=production,\
             --set-secrets MONGODB_URI=NOTE_MONGODB_URI:latest,SESSION_SECRET=NOTE_SESSION_SECRET:latest,GOOGLE_CLIENT_ID=NOTE_GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=NOTE_GOOGLE_CLIENT_SECRET:latest,GOOGLE_CALLBACK_URI=NOTE_GOOGLE_CALLBACK_URI:latest \
             --min-instances=0 --max-instances=2
