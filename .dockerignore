@@ -6,3 +6,5 @@ dist
 .vscode
 .github
 LICENSE
+.gitignore
+*.md
