@@ -28,7 +28,10 @@ app.use(
     secret: process.env.SESSION_SECRET || "keyboard cat",
     resave: false,
     saveUninitialized: true,
-    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      dbName: "notes_app",
+    }),
     cookie: { maxAge: 86400000 }, // 24 hours
   }),
 );
