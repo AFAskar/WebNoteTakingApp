@@ -15,7 +15,7 @@ permissions:
 env:
   # Default values; you can override these with GitHub Variables
   DOCKERHUB_REPO: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/webnotetakingapp
-  GCP_REGION: ${{ vars.GCP_REGION || 'europe-west3' }}
+  GCP_REGION: ${{ vars.GCP_REGION || 'europe-west1' }}
   SERVICE_NAME: ${{ vars.SERVICE_NAME || 'webnotetakingapp-service' }}
 
 jobs:
