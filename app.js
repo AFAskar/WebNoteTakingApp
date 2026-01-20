@@ -8,6 +8,7 @@ const connectDB = require("./server/config/db");
 const session = require("express-session");
 const passport = require("passport");
 const MongoStore = require("connect-mongo");
+const mongoose = require("mongoose");
 
 const required = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "MONGODB_URI"];
 
