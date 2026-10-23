@@ -3,6 +3,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
@@ -94,6 +95,14 @@ class MigrationTests(unittest.TestCase):
                     module.main()
             self.assertEqual(cli.call_count, 2)
             self.assertFalse((Path(directory) / "cloud-run-service.json").exists())
+
+    def test_failure_diagnostics_do_not_expose_command_arguments_or_output(self):
+        error = subprocess.CalledProcessError(1, ["gcloud", "secrets", "versions", "access", "latest", "--secret", "private-name"],
+                                               output="private-value", stderr="PERMISSION_DENIED private-value")
+        message = module.failure_message(error)
+        self.assertIn("secrets versions access", message)
+        self.assertIn("PERMISSION_DENIED", message)
+        self.assertNotIn("private", message)
 
 
 if __name__ == "__main__":

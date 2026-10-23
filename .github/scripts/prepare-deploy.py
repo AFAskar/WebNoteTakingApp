@@ -4,6 +4,7 @@ import copy
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -13,6 +14,16 @@ def gcloud(*args):
         ["gcloud", *args, "--quiet"], capture_output=True, text=True, check=True
     )
     return result.stdout
+
+
+def failure_message(error):
+    operation = " ".join(error.cmd[1:4])
+    categories = re.findall(
+        r"\b(?:PERMISSION_DENIED|NOT_FOUND|INVALID_ARGUMENT|UNAUTHENTICATED|FAILED_PRECONDITION|RESOURCE_EXHAUSTED)\b",
+        error.stderr or "",
+    )
+    category = categories[0] if categories else "unclassified CLI error"
+    return f"gcloud {operation} failed (exit {error.returncode}, {category}); command output withheld."
 
 
 def prepare(service, image, config_names, read_secret):
@@ -110,4 +121,4 @@ if __name__ == "__main__":
         main()
     except subprocess.CalledProcessError as error:
         # Never print captured command output, which may contain configuration.
-        sys.exit(f"gcloud failed (exit {error.returncode}); no secret values were logged.")
+        sys.exit(failure_message(error))
