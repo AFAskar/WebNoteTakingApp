@@ -1,12 +1,11 @@
 name: Deploy to Cloud Run
 
 on:
-  pull_request:
   push:
     branches: ["master"]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: deploy-main
   cancel-in-progress: true
 
 permissions:
@@ -20,16 +19,7 @@ env:
   SERVICE_NAME: ${{ vars.SERVICE_NAME || 'webnotetakingapp-service' }}
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Test configuration migration
-        run: python3 -m unittest discover -s .github/scripts -v
-
   deploy:
-    if: github.event_name == 'push'
-    needs: validate
     name: Build, Push, and Deploy
     runs-on: ubuntu-latest
 
@@ -78,8 +68,22 @@ jobs:
       - name: Set up gcloud SDK
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Deploy to Cloud Run and verify configuration
+      - name: Deploy to Cloud Run
+        shell: bash
         env:
           IMAGE: ${{ env.DOCKERHUB_REPO }}:${{ steps.vars.outputs.SHORT_SHA }}
-          NON_SECRET_CONFIG: '{"GOOGLE_CLIENT_ID": "NOTE_GOOGLE_CLIENT_ID", "GOOGLE_CALLBACK_URI": "NOTE_GOOGLE_CALLBACK_URI"}'
-        run: python3 .github/scripts/prepare-deploy.py
+        run: |
+          if [[ -z "${SERVICE_NAME}" ]]; then
+            echo "SERVICE_NAME variable is not set (Repository variable)." >&2
+            exit 1
+          fi
+
+          gcloud run deploy "${SERVICE_NAME}" \
+            --image "$IMAGE" \
+            --region "${GCP_REGION}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3000 \
+            --set-env-vars NODE_ENV=production,\
+            --set-secrets MONGODB_URI=NOTE_MONGODB_URI:latest,SESSION_SECRET=NOTE_SESSION_SECRET:latest,GOOGLE_CLIENT_ID=NOTE_GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=NOTE_GOOGLE_CLIENT_SECRET:latest,GOOGLE_CALLBACK_URI=NOTE_GOOGLE_CALLBACK_URI:latest \
+            --min-instances=0 --max-instances=2
